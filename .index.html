@@ -1,0 +1,272 @@
+<!-- ... existing code ... -->
+        .digit-group-space {
+            margin-left: 10px;
+        }
+
+        /* ספרות מדריך אפורות במצב למידה אינטראקטיבי */
+        .digit-guide {
+            color: var(--text-muted);
+            opacity: 0.42;
+            display: inline-block;
+            transition: opacity 0.15s, color 0.15s;
+        }
+
+        .digit-guide.next-up {
+            opacity: 0.92;
+            color: var(--accent);
+            border-bottom: 3px solid var(--accent);
+            border-radius: 2px;
+        }
+
+        .hint-preview {
+            display: inline-block;
+            color: var(--warning);
+<!-- ... existing code ... -->
+        .btn-restart {
+            background-color: var(--bg-btn);
+            color: var(--text-main);
+        }
+
+        .btn-toggle-sheet {
+            background-color: rgba(99, 102, 241, 0.16);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+        }
+
+        /* תיבת הספרות הנעה משמאל לימין (LTR) */
+<!-- ... existing code ... -->
+            <div class="display-header">
+                <span class="mode-desc" id="modeDescText">מצב תרגול: 3 חיים ו-3 רמזים זמינים</span>
+                <div class="action-btns">
+                    <button type="button" id="btnToggleSheet" class="small-btn btn-toggle-sheet hidden">📖 הצג רשימה מלאה</button>
+                    <button type="button" id="btnHint" class="small-btn btn-hint">💡 רמז (3)</button>
+                    <button type="button" id="btnRestart" class="small-btn btn-restart">🔄 התחל מחדש</button>
+                </div>
+            </div>
+
+            <div class="pi-stream-wrapper" id="streamWrapper">
+                <div class="pi-stream" id="piStream">
+                    <span class="pi-prefix">3.</span><span id="typedDigits"></span><span id="hintSpot"></span><span id="guideDigits"></span><span class="cursor-box" id="cursorBox"></span>
+                </div>
+            </div>
+        </main>
+<!-- ... existing code ... -->
+        const state = {
+            mode: "practice", // 'practice' | 'hardcore' | 'timer' | 'study'
+            currentIndex: 0,
+            lives: 3,
+            hintsLeft: 3,
+            isGameOver: false,
+            activeHintDigit: null,
+            hintTimeout: null,
+            studySheetOpen: false,
+            // משתני מצב טיימר
+            timerDuration: 3.0, // מתחיל ב-3.0 שניות לספרה ויורד בהדרגה עד 1.5s
+<!-- ... existing code ... -->
+            displayCard: document.getElementById("displayCard"),
+            modeDescText: document.getElementById("modeDescText"),
+            btnToggleSheet: document.getElementById("btnToggleSheet"),
+            btnHint: document.getElementById("btnHint"),
+            btnRestart: document.getElementById("btnRestart"),
+            streamWrapper: document.getElementById("streamWrapper"),
+            typedDigits: document.getElementById("typedDigits"),
+            hintSpot: document.getElementById("hintSpot"),
+            guideDigits: document.getElementById("guideDigits"),
+            cursorBox: document.getElementById("cursorBox"),
+            feedbackBar: document.getElementById("feedbackBar"),
+<!-- ... existing code ... -->
+            } else if (state.mode === "timer") {
+                el.bestLabel.textContent = "שיא (טיימר)";
+                el.bestVal.textContent = state.highScores.timer;
+                el.statusLabel.textContent = "קצב נוכחי";
+                el.statusVal.textContent = "⚡ " + state.timerDuration.toFixed(1) + "s";
+            } else if (state.mode === "study") {
+                el.bestLabel.textContent = "סה״כ במאגר";
+                el.bestVal.textContent = PI_DIGITS.length;
+                el.statusLabel.textContent = "מצב למידה";
+                el.statusVal.textContent = "♾️ ללא פסילה";
+            }
+        }
+
+        function renderDigitsStream() {
+            let html = "";
+            for (let i = 0; i < state.currentIndex; i++) {
+                const spaceClass = (i > 0 && i % 5 === 0) ? " digit-group-space" : "";
+                html += `<span class="digit-correct${spaceClass}">${PI_DIGITS[i]}</span>`;
+            }
+            el.typedDigits.innerHTML = html;
+
+            // במצב למידה: מציג את הספרות הבאות כמדריך אפור מחולק לקבוצות של 5
+            if (state.mode === "study") {
+                el.cursorBox.classList.add("hidden");
+                const previewCount = 35;
+                const endIdx = Math.min(state.currentIndex + previewCount, PI_DIGITS.length);
+                let guideHtml = "";
+                for (let j = state.currentIndex; j < endIdx; j++) {
+                    const spaceClass = (j > 0 && j % 5 === 0) ? " digit-group-space" : "";
+                    const nextClass = (j === state.currentIndex) ? " next-up" : "";
+                    guideHtml += `<span class="digit-guide${spaceClass}${nextClass}">${PI_DIGITS[j]}</span>`;
+                }
+                el.guideDigits.innerHTML = guideHtml;
+
+                // גלילה עדינה כך שהספרה הבאה להקלדה תישאר במרכז שדה הראייה
+                requestAnimationFrame(() => {
+                    const nextEl = el.guideDigits.querySelector(".next-up");
+                    if (nextEl) {
+                        const targetScroll = nextEl.offsetLeft - (el.streamWrapper.clientWidth * 0.35);
+                        el.streamWrapper.scrollLeft = Math.max(0, targetScroll);
+                    }
+                });
+            } else {
+                el.cursorBox.classList.remove("hidden");
+                el.guideDigits.innerHTML = "";
+                requestAnimationFrame(() => {
+                    el.streamWrapper.scrollLeft = el.streamWrapper.scrollWidth;
+                });
+            }
+        }
+
+        function resetGame() {
+            stopTimer();
+            clearHintVisuals();
+            el.gameOverModal.classList.remove("open");
+            el.displayCard.classList.remove("error-flash");
+
+            state.currentIndex = 0;
+            state.lives = state.mode === "practice" ? 3 : 0;
+            state.hintsLeft = state.mode === "practice" ? 3 : 0;
+            state.isGameOver = false;
+
+            renderDigitsStream();
+            updateStatsUI();
+
+            if (state.mode === "practice") {
+                el.timerContainer.classList.remove("visible");
+                el.btnToggleSheet.classList.add("hidden");
+                el.modeDescText.textContent = "מצב תרגול: 3 חיים ו-3 רמזים זמינים";
+                el.btnHint.classList.remove("hidden");
+                el.btnHint.disabled = false;
+                el.btnHint.textContent = `💡 רמז (${state.hintsLeft})`;
+                setFeedback("מוכן! הקלד את הספרה הראשונה אחרי הנקודה (1)");
+            } else if (state.mode === "hardcore") {
+                el.timerContainer.classList.remove("visible");
+                el.btnToggleSheet.classList.add("hidden");
+                el.modeDescText.textContent = "מצב קשוח: ללא חיים וללא רמזים — טעות אחת פוסלת!";
+                el.btnHint.classList.add("hidden");
+                setFeedback("מצב קשוח פעיל! הקלד את הספרה הראשונה (1)");
+            } else if (state.mode === "timer") {
+                el.timerContainer.classList.add("visible");
+                el.btnToggleSheet.classList.add("hidden");
+                el.modeDescText.textContent = "מצב טיימר: ללא חיים וללא רמזים — הספק לפני שהזמן נגמר!";
+                el.btnHint.classList.add("hidden");
+                resetTimerForNextDigit(false);
+                setFeedback("הטיימר יתחיל מיד עם הספרה הראשונה (1) — בהצלחה!");
+            } else if (state.mode === "study") {
+                el.timerContainer.classList.remove("visible");
+                el.btnHint.classList.add("hidden");
+                el.btnToggleSheet.classList.remove("hidden");
+                el.modeDescText.textContent = "מצב למידה אינטראקטיבי: הקלד לפי המדריך שעל המסך ללא פסילות";
+                setFeedback("הקלד את הספרה המודגשת (1) כדי להתקדם ולשנן!");
+            }
+        }
+
+        function setMode(newMode) {
+            state.mode = newMode;
+            stopTimer();
+
+            el.modeBtns.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.mode === newMode);
+            });
+
+            el.statsSection.classList.remove("hidden");
+            el.displayCard.classList.remove("hidden");
+            el.feedbackBar.classList.remove("hidden");
+            el.keypadSection.classList.remove("hidden");
+
+            if (newMode === "study") {
+                renderStudyGrid();
+                el.studyPanel.classList.toggle("visible", state.studySheetOpen);
+                el.btnToggleSheet.textContent = state.studySheetOpen ? "📖 הסתר רשימה מלאה" : "📖 הצג רשימה מלאה";
+            } else {
+                el.studyPanel.classList.remove("visible");
+            }
+
+            resetGame();
+        }
+<!-- ... existing code ... -->
+        function handleDigitInput(digit) {
+            if (state.isGameOver) return;
+            if (state.currentIndex >= PI_DIGITS.length) return;
+
+            const expected = PI_DIGITS[state.currentIndex];
+
+            if (digit === expected) {
+                // תשובה נכונה
+                clearHintVisuals();
+                SoundEngine.playDigit(digit);
+
+                state.currentIndex++;
+                renderDigitsStream();
+
+                // עדכון שיא אישי (במצבי משחק תחרותיים)
+                if (state.mode !== "study" && state.currentIndex > state.highScores[state.mode]) {
+                    state.highScores[state.mode] = state.currentIndex;
+                    saveHighScores();
+                }
+
+                // איפוס והפעלת טיימר מחדש במצב טיימר
+                if (state.mode === "timer") {
+                    resetTimerForNextDigit(true);
+                }
+
+                updateStatsUI();
+
+                if (state.mode === "study") {
+                    const nextChar = PI_DIGITS[state.currentIndex];
+                    if (nextChar !== undefined) {
+                        setFeedback(`✓ יפה! (${state.currentIndex} ספרות) — הספרה הבאה: ${nextChar}`, "ok");
+                    } else {
+                        setFeedback("🏆 כל הכבוד! השלמת את כל 1,000 הספרות!", "ok");
+                    }
+                    return;
+                }
+
+                if (state.currentIndex % 10 === 0) {
+                    SoundEngine.playMilestone();
+                    setFeedback(`🔥 מדהים! הגעת ל-${state.currentIndex} ספרות!`, "ok");
+                } else {
+                    setFeedback(`✓ מצוין! (${state.currentIndex} ספרות)`, "ok");
+                }
+
+                if (state.currentIndex >= PI_DIGITS.length) {
+                    stopTimer();
+                    triggerGameOver("win", null, null);
+                }
+            } else {
+                // ספרה שגויה
+                SoundEngine.playError();
+                el.displayCard.classList.remove("error-flash");
+                void el.displayCard.offsetWidth;
+                el.displayCard.classList.add("error-flash");
+
+                if (state.mode === "study") {
+                    setFeedback(`💡 לחצת ${digit} — הספרה הבאה ברצף היא ${expected}`, "warn");
+                    return;
+                }
+
+                if (state.mode === "practice") {
+<!-- ... existing code ... -->
+        el.btnHint.addEventListener("click", useHint);
+        el.btnRestart.addEventListener("click", resetGame);
+        el.btnPlayAgain.addEventListener("click", resetGame);
+
+        el.btnToggleSheet.addEventListener("click", () => {
+            state.studySheetOpen = !state.studySheetOpen;
+            el.studyPanel.classList.toggle("visible", state.studySheetOpen);
+            el.btnToggleSheet.textContent = state.studySheetOpen ? "📖 הסתר רשימה מלאה" : "📖 הצג רשימה מלאה";
+        });
+
+        el.btnGoStudy.addEventListener("click", () => {
+            setMode("study");
+        });
+<!-- ... existing code ... -->
