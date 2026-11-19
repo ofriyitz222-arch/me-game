@@ -62,6 +62,106 @@
       font-size: 0.95rem;
     }
 
+    /* Auth Card */
+    .auth-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      margin: 20px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .auth-card h2 {
+      text-align: center;
+      color: var(--accent);
+      font-size: 1.4rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-group label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .input-group input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .primary-btn {
+      background: var(--accent-dark);
+      color: #fff;
+      border: 1px solid var(--accent);
+      padding: 11px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent);
+      color: #0f172a;
+    }
+
+    .auth-error {
+      color: var(--danger);
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    /* User Top Bar */
+    .user-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .user-bar span strong {
+      color: var(--accent);
+    }
+
+    .logout-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
     /* Mode Selector */
     .modes {
       display: grid;
@@ -294,6 +394,52 @@
       grid-column: 2;
     }
 
+    /* Leaderboard Section */
+    .leaderboard-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .leaderboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .leaderboard-header h3 {
+      font-size: 1.05rem;
+      color: var(--warning);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr.current-user-row {
+      background: rgba(56, 189, 248, 0.12);
+      font-weight: 700;
+    }
+
     /* Notes Section */
     .notes-section {
       background: var(--card);
@@ -381,86 +527,132 @@
       <p>הקלד כמה שיותר ספרות אחרי הנקודה העשרונית (3.)</p>
     </header>
 
-    <!-- מצבי משחק -->
-    <div class="modes">
-      <button class="mode-btn active" data-mode="practice" onclick="setMode('practice')">תרגול</button>
-      <button class="mode-btn" data-mode="hardcore" onclick="setMode('hardcore')">מצב קשוח</button>
-      <button class="mode-btn" data-mode="timer" onclick="setMode('timer')">טיימר</button>
-      <button class="mode-btn" data-mode="study" onclick="setMode('study')">מצב למידה</button>
+    <!-- מסך התחברות / הרשמה -->
+    <div id="authScreen" class="auth-card">
+      <h2>התחברות / הרשמה</h2>
+      <p style="font-size:0.85rem; color:var(--muted); text-align:center;">
+        הזן שם משתמש וסיסמה כדי לשמור את השיאים והמחברת שלך
+      </p>
+      <div class="input-group">
+        <label for="usernameInput">שם משתמש</label>
+        <input type="text" id="usernameInput" placeholder="לדוגמה: דניאל" autocomplete="username" />
+      </div>
+      <div class="input-group">
+        <label for="passwordInput">סיסמה</label>
+        <input type="password" id="passwordInput" placeholder="הקלד סיסמה" autocomplete="current-password" />
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <button class="primary-btn" onclick="handleLoginOrRegister()">כניסה למשחק</button>
     </div>
 
-    <!-- נתונים -->
-    <div class="stats-bar">
-      <div class="stat-item">
-        <span class="stat-label">ספרות</span>
-        <span class="stat-value" id="scoreVal">0</span>
+    <!-- מסך המשחק הראשי -->
+    <div id="gameScreen" style="display:none; flex-direction:column; gap:16px;">
+      
+      <!-- סרגל משתמש מחובר -->
+      <div class="user-bar">
+        <span>מחובר בתור: <strong id="displayUsername"></strong></span>
+        <button class="logout-btn" onclick="logout()">התנתק</button>
       </div>
-      <div class="stat-item">
-        <span class="stat-label">שיא אישי</span>
-        <span class="stat-value" id="highScoreVal">0</span>
+
+      <!-- מצבי משחק -->
+      <div class="modes">
+        <button class="mode-btn active" data-mode="practice" onclick="setMode('practice')">תרגול</button>
+        <button class="mode-btn" data-mode="hardcore" onclick="setMode('hardcore')">מצב קשוח</button>
+        <button class="mode-btn" data-mode="timer" onclick="setMode('timer')">טיימר</button>
+        <button class="mode-btn" data-mode="study" onclick="setMode('study')">מצב למידה</button>
       </div>
-      <div class="stat-item" id="livesStat">
-        <span class="stat-label">חיים</span>
-        <span class="stat-value" id="livesVal">❤️❤️❤️</span>
+
+      <!-- נתונים -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-label">ספרות</span>
+          <span class="stat-value" id="scoreVal">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">שיא אישי</span>
+          <span class="stat-value" id="highScoreVal">0</span>
+        </div>
+        <div class="stat-item" id="livesStat">
+          <span class="stat-label">חיים</span>
+          <span class="stat-value" id="livesVal">❤️❤️❤️</span>
+        </div>
+        <div class="stat-item" id="timerStat" style="display:none;">
+          <span class="stat-label">זמן</span>
+          <span class="stat-value" id="timerText">3.0s</span>
+        </div>
       </div>
-      <div class="stat-item" id="timerStat" style="display:none;">
-        <span class="stat-label">זמן</span>
-        <span class="stat-value" id="timerText">3.0s</span>
+
+      <!-- מד זמן למצב טיימר -->
+      <div class="timer-container" id="timerBarContainer">
+        <div class="timer-fill" id="timerFill"></div>
       </div>
-    </div>
 
-    <!-- מד זמן למצב טיימר -->
-    <div class="timer-container" id="timerBarContainer">
-      <div class="timer-fill" id="timerFill"></div>
-    </div>
-
-    <!-- תצוגת פאי -->
-    <div class="pi-box" id="piBox">
-      <div class="pi-stream" id="piStream">
-        <span class="pi-prefix">3.</span><span class="cursor"></span>
+      <!-- תצוגת פאי -->
+      <div class="pi-box" id="piBox">
+        <div class="pi-stream" id="piStream">
+          <span class="pi-prefix">3.</span><span class="cursor"></span>
+        </div>
       </div>
-    </div>
 
-    <!-- הודעות מצב -->
-    <div class="message-bar" id="messageBar">התחל להקליד את הספרה הראשונה: 1</div>
+      <!-- הודעות מצב -->
+      <div class="message-bar" id="messageBar">התחל להקליד את הספרה הראשונה: 1</div>
 
-    <!-- כפתורי פעולה -->
-    <div class="action-controls">
-      <button class="action-btn" id="hintBtn" onclick="useHint()">💡 רמז (<span id="hintsLeft">3</span>)</button>
-      <button class="action-btn" id="toggleTableBtn" style="display:none;" onclick="toggleStudyTable()">📖 הצג/הסתר טבלת 1,000 ספרות</button>
-      <button class="action-btn" onclick="resetGame()">🔄 התחל מחדש</button>
-      <button class="action-btn" id="soundBtn" onclick="toggleSound()">🔊 צלילים: פועל</button>
-    </div>
-
-    <!-- מקלדת מספרים -->
-    <div class="numpad" id="numpad">
-      <button class="num-btn" data-num="1" onclick="handleInput('1')">1</button>
-      <button class="num-btn" data-num="2" onclick="handleInput('2')">2</button>
-      <button class="num-btn" data-num="3" onclick="handleInput('3')">3</button>
-      <button class="num-btn" data-num="4" onclick="handleInput('4')">4</button>
-      <button class="num-btn" data-num="5" onclick="handleInput('5')">5</button>
-      <button class="num-btn" data-num="6" onclick="handleInput('6')">6</button>
-      <button class="num-btn" data-num="7" onclick="handleInput('7')">7</button>
-      <button class="num-btn" data-num="8" onclick="handleInput('8')">8</button>
-      <button class="num-btn" data-num="9" onclick="handleInput('9')">9</button>
-      <button class="num-btn zero-btn" data-num="0" onclick="handleInput('0')">0</button>
-    </div>
-
-    <!-- רשימת ספרות מלאה למצב למידה -->
-    <div class="study-table" id="studyTable"></div>
-
-    <!-- תיבת כתיבה והערות אישית -->
-    <div class="notes-section">
-      <div class="notes-header">
-        <h3>📝 המחברת שלי (הערות וטיפים לשינון)</h3>
-        <span class="notes-status" id="notesStatus">נשמר אוטומטית</span>
+      <!-- כפתורי פעולה -->
+      <div class="action-controls">
+        <button class="action-btn" id="hintBtn" onclick="useHint()">💡 רמז (<span id="hintsLeft">3</span>)</button>
+        <button class="action-btn" id="toggleTableBtn" style="display:none;" onclick="toggleStudyTable()">📖 הצג/הסתר טבלת 1,000 ספרות</button>
+        <button class="action-btn" onclick="resetGame()">🔄 התחל מחדש</button>
+        <button class="action-btn" id="soundBtn" onclick="toggleSound()">🔊 צלילים: פועל</button>
       </div>
-      <textarea id="userNotes" placeholder="כתוב כאן כל מה שאתה לומד, קבוצות ספרות שאתה מנסה לזכור, או הערות לעצמך..."></textarea>
+
+      <!-- מקלדת מספרים -->
+      <div class="numpad" id="numpad">
+        <button class="num-btn" data-num="1" onclick="handleInput('1')">1</button>
+        <button class="num-btn" data-num="2" onclick="handleInput('2')">2</button>
+        <button class="num-btn" data-num="3" onclick="handleInput('3')">3</button>
+        <button class="num-btn" data-num="4" onclick="handleInput('4')">4</button>
+        <button class="num-btn" data-num="5" onclick="handleInput('5')">5</button>
+        <button class="num-btn" data-num="6" onclick="handleInput('6')">6</button>
+        <button class="num-btn" data-num="7" onclick="handleInput('7')">7</button>
+        <button class="num-btn" data-num="8" onclick="handleInput('8')">8</button>
+        <button class="num-btn" data-num="9" onclick="handleInput('9')">9</button>
+        <button class="num-btn zero-btn" data-num="0" onclick="handleInput('0')">0</button>
+      </div>
+
+      <!-- רשימת ספרות מלאה למצב למידה -->
+      <div class="study-table" id="studyTable"></div>
+
+      <!-- טבלת שיאים -->
+      <div class="leaderboard-section">
+        <div class="leaderboard-header">
+          <h3>🏆 טבלת שיאים (Leaderboard)</h3>
+          <span style="font-size:0.8rem; color:var(--muted);" id="leaderboardModeLabel">מצב: תרגול</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>מקום</th>
+              <th>שם משתמש</th>
+              <th>שיא (ספרות)</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+
+      <!-- תיבת כתיבה והערות אישית -->
+      <div class="notes-section">
+        <div class="notes-header">
+          <h3>📝 המחברת שלי (הערות וטיפים לשינון)</h3>
+          <span class="notes-status" id="notesStatus">נשמר אוטומטית</span>
+        </div>
+        <textarea id="userNotes" placeholder="כתוב כאן כל מה שאתה לומד, קבוצות ספרות שאתה מנסה לזכור, או הערות לעצמך..."></textarea>
+      </div>
+
     </div>
   </div>
 
   <script>
-    // 1,000 הספרות הראשונות של פאי אחרי הנקודה העשרונית
     const PI_DIGITS = 
       "14159265358979323846264338327950288419716939937510" +
       "58209749445923078164062862089986280348253421170679" +
@@ -483,28 +675,30 @@
       "59825349042875546873115956286388235378759375195778" +
       "18577805321712268066130019278766111959092164201989";
 
-    let currentMode = 'practice'; // 'practice', 'hardcore', 'timer', 'study'
+    const MODE_NAMES = {
+      practice: 'תרגול',
+      hardcore: 'מצב קשוח',
+      timer: 'טיימר',
+      study: 'מצב למידה'
+    };
+
+    // Users Database in localStorage
+    // Structure: { [username]: { password: string, scores: { practice, hardcore, timer, study }, notes: string } }
+    let usersDB = JSON.parse(localStorage.getItem('pi_users_db')) || {};
+    let currentUser = localStorage.getItem('pi_current_user') || null;
+
+    let currentMode = 'practice';
     let currentIndex = 0;
     let lives = 3;
     let hints = 3;
     let isGameOver = false;
     let soundEnabled = true;
 
-    // Timer variables
     let timerInterval = null;
     let timeLeft = 3.0;
     let maxTime = 3.0;
-    let timerStarted = false;
 
-    // High scores per mode
-    let highScores = JSON.parse(localStorage.getItem('pi_high_scores_v2')) || {
-      practice: 0,
-      hardcore: 0,
-      timer: 0,
-      study: 0
-    };
-
-    // Audio Context (Simple Web Audio API without external files)
+    // Audio
     let audioCtx = null;
     function playTone(freq, type = 'sine', duration = 0.08) {
       if (!soundEnabled) return;
@@ -525,7 +719,100 @@
       } catch (e) {}
     }
 
-    // Initialize study table
+    // --- Authentication ---
+    function handleLoginOrRegister() {
+      const username = document.getElementById('usernameInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const errEl = document.getElementById('authError');
+
+      if (!username || !password) {
+        errEl.textContent = 'נא למלא שם משתמש וסיסמה.';
+        return;
+      }
+
+      if (usersDB[username]) {
+        // Existing user -> verify password
+        if (usersDB[username].password !== password) {
+          errEl.textContent = 'סיסמה שגויה למשתמש זה.';
+          return;
+        }
+      } else {
+        // Register new user
+        usersDB[username] = {
+          password: password,
+          scores: { practice: 0, hardcore: 0, timer: 0, study: 0 },
+          notes: ''
+        };
+        saveUsersDB();
+      }
+
+      errEl.textContent = '';
+      currentUser = username;
+      localStorage.setItem('pi_current_user', currentUser);
+      enterGame();
+    }
+
+    function logout() {
+      clearInterval(timerInterval);
+      currentUser = null;
+      localStorage.removeItem('pi_current_user');
+      document.getElementById('usernameInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('gameScreen').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'flex';
+    }
+
+    function saveUsersDB() {
+      localStorage.setItem('pi_users_db', JSON.stringify(usersDB));
+    }
+
+    function enterGame() {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('gameScreen').style.display = 'flex';
+      document.getElementById('displayUsername').textContent = currentUser;
+
+      // Load user's personal notes
+      document.getElementById('userNotes').value = usersDB[currentUser].notes || '';
+
+      resetGame();
+      renderLeaderboard();
+    }
+
+    // --- Leaderboard ---
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboardBody');
+      document.getElementById('leaderboardModeLabel').textContent = `מצב: ${MODE_NAMES[currentMode]}`;
+
+      const entries = Object.keys(usersDB).map(user => ({
+        username: user,
+        score: (usersDB[user].scores && usersDB[user].scores[currentMode]) || 0
+      }));
+
+      entries.sort((a, b) => b.score - a.score);
+
+      tbody.innerHTML = '';
+      entries.forEach((entry, idx) => {
+        const tr = document.createElement('tr');
+        if (entry.username === currentUser) {
+          tr.classList.add('current-user-row');
+        }
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+        tr.innerHTML = `
+          <td>${medal}</td>
+          <td>${escapeHTML(entry.username)}</td>
+          <td>${entry.score}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // --- Study Table ---
     function buildStudyTable() {
       const table = document.getElementById('studyTable');
       let html = '<strong style="color:var(--accent)">3.</strong> ';
@@ -540,17 +827,18 @@
       table.style.display = table.style.display === 'block' ? 'none' : 'block';
     }
 
+    // --- Game Logic ---
     function setMode(mode) {
       currentMode = mode;
       document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
       });
       resetGame();
+      renderLeaderboard();
     }
 
     function resetGame() {
       clearInterval(timerInterval);
-      timerStarted = false;
       currentIndex = 0;
       isGameOver = false;
       lives = currentMode === 'practice' ? 3 : 0;
@@ -558,10 +846,8 @@
       maxTime = 3.0;
       timeLeft = maxTime;
 
-      // Clear hint highlights
       document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('hint-highlight'));
 
-      // Update UI visibility by mode
       document.getElementById('livesStat').style.display = currentMode === 'practice' ? 'flex' : 'none';
       document.getElementById('hintBtn').style.display = currentMode === 'practice' ? 'inline-block' : 'none';
       document.getElementById('timerStat').style.display = currentMode === 'timer' ? 'flex' : 'none';
@@ -590,7 +876,8 @@
 
     function updateStats() {
       document.getElementById('scoreVal').textContent = currentIndex;
-      document.getElementById('highScoreVal').textContent = highScores[currentMode] || 0;
+      const userHigh = (currentUser && usersDB[currentUser]?.scores?.[currentMode]) || 0;
+      document.getElementById('highScoreVal').textContent = userHigh;
       
       if (currentMode === 'practice') {
         document.getElementById('livesVal').textContent = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
@@ -609,7 +896,6 @@
       const stream = document.getElementById('piStream');
       let html = '<span class="pi-prefix">3.</span>';
 
-      // Show typed digits (show last 35 to keep DOM super fast, or all if reasonable)
       const startShow = Math.max(0, currentIndex - 40);
       if (startShow > 0) {
         html += '<span style="color:var(--muted)">...</span>';
@@ -624,7 +910,6 @@
 
       html += '<span class="cursor"></span>';
 
-      // In study mode, show next 20 guide digits
       if (currentMode === 'study') {
         const endGuide = Math.min(PI_DIGITS.length, currentIndex + 20);
         for (let i = currentIndex; i < endGuide; i++) {
@@ -637,15 +922,12 @@
       }
 
       stream.innerHTML = html;
-
-      // Auto scroll right in LTR box
       const piBox = document.getElementById('piBox');
       piBox.scrollLeft = piBox.scrollWidth;
     }
 
     function startTimer() {
       clearInterval(timerInterval);
-      // Gradually get slightly faster as score increases, min 1.5s
       maxTime = Math.max(1.5, 3.0 - Math.floor(currentIndex / 10) * 0.15);
       timeLeft = maxTime;
 
@@ -672,29 +954,28 @@
     }
 
     function handleInput(digit) {
-      if (isGameOver) return;
+      if (!currentUser || isGameOver) return;
       if (currentIndex >= PI_DIGITS.length) {
         setMessage('מדהים! סיימת את כל 1,000 הספרות!', 'var(--success)');
         return;
       }
 
-      // Clear any active hint highlights
       document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('hint-highlight'));
-
       const expected = PI_DIGITS[currentIndex];
 
       if (digit === expected) {
-        // Correct!
         currentIndex++;
         playTone(440 + (currentIndex % 12) * 35, 'sine', 0.07);
 
-        if (currentIndex > (highScores[currentMode] || 0)) {
-          highScores[currentMode] = currentIndex;
-          localStorage.setItem('pi_high_scores_v2', JSON.stringify(highScores));
+        // Save user high score & update leaderboard
+        const userScores = usersDB[currentUser].scores;
+        if (currentIndex > (userScores[currentMode] || 0)) {
+          userScores[currentMode] = currentIndex;
+          saveUsersDB();
+          renderLeaderboard();
         }
 
         if (currentMode === 'timer') {
-          timerStarted = true;
           startTimer();
         }
 
@@ -702,11 +983,10 @@
         renderPiStream();
         setMessage(`מעולה! הגעת ל-${currentIndex} ספרות`, 'var(--success)');
       } else {
-        // Wrong digit
         playTone(160, 'sawtooth', 0.2);
         const box = document.getElementById('piBox');
         box.classList.remove('shake');
-        void box.offsetWidth; // trigger reflow
+        void box.offsetWidth;
         box.classList.add('shake');
 
         if (currentMode === 'study') {
@@ -723,7 +1003,6 @@
             setMessage(`טעות! נשארו לך ${lives} חיים. נסה שוב!`, 'var(--danger)');
           }
         } else {
-          // Hardcore or Timer mode -> instant game over
           clearInterval(timerInterval);
           triggerGameOver(`נפסלת! לחצת ${digit}, אבל הספרה הנכונה היא ${expected}`);
         }
@@ -753,8 +1032,12 @@
       document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 צלילים: פועל' : '🔇 צלילים: כבוי';
     }
 
-    // Physical keyboard support (ignore when typing in notes textarea)
+    // Physical keyboard support
     document.addEventListener('keydown', (e) => {
+      if (!currentUser) {
+        if (e.key === 'Enter') handleLoginOrRegister();
+        return;
+      }
       if (document.activeElement === document.getElementById('userNotes')) return;
       if (e.key >= '0' && e.key <= '9') {
         e.preventDefault();
@@ -764,13 +1047,13 @@
       }
     });
 
-    // Auto-save user notes
+    // Save personal notes per user
     const notesArea = document.getElementById('userNotes');
     const notesStatus = document.getElementById('notesStatus');
-    notesArea.value = localStorage.getItem('pi_user_notes') || '';
-
     notesArea.addEventListener('input', () => {
-      localStorage.setItem('pi_user_notes', notesArea.value);
+      if (!currentUser) return;
+      usersDB[currentUser].notes = notesArea.value;
+      saveUsersDB();
       notesStatus.textContent = 'שומר...';
       setTimeout(() => {
         notesStatus.textContent = 'נשמר אוטומטית ✓';
@@ -779,7 +1062,9 @@
 
     // Init
     buildStudyTable();
-    resetGame();
+    if (currentUser && usersDB[currentUser]) {
+      enterGame();
+    }
   </script>
 </body>
 </html>
